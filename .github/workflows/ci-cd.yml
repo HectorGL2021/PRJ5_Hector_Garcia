@@ -83,6 +83,11 @@ jobs:
 
   # ────────────────────────────────────────────────────────
   # Job 4: Desplegar en Azure Container Apps
+  # Nota: requiere Service Principal (AZURE_CREDENTIALS).
+  # La suscripción de UNIR restringe la creación de SPs vía
+  # Azure AD. El despliegue inicial se realizó manualmente con
+  # az containerapp create. Este job queda configurado para
+  # ejecutarse cuando se disponga de un SP con permisos.
   # ────────────────────────────────────────────────────────
   deploy:
     name: 🚀 Deploy to Azure
@@ -91,14 +96,10 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-      - name: Instalar Azure CLI
-        run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
       - name: Login en Azure
-        run: |
-          az login \
-            --username "${{ secrets.AZURE_USERNAME }}" \
-            --password "${{ secrets.AZURE_PASSWORD }}"
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Desplegar nueva imagen en Azure Container Apps
         run: |
